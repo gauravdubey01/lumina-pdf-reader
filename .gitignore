@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build outputs
+build/
+dist/
+*.spec
+
+# Test output artifacts
+test_chunks/
+test_single_pages/
+Test_Merged.pdf
+Test_Rotated.pdf
+Test_Split_Range.pdf
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.swp

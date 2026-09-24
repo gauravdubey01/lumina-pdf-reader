@@ -1,0 +1,3 @@
+@echo off
+echo Launching Lumina PDF Reader...
+python main.py
