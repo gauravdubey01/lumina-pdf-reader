@@ -271,6 +271,43 @@ QProgressBar::chunk {
     background-color: #3b82f6;
     border-radius: 5px;
 }
+
+/* Slider */
+QSlider::groove:horizontal {
+    border: none;
+    height: 4px;
+    background: #333842;
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #3b82f6;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #60a5fa;
+    border: none;
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+    border-radius: 6px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #93c5fd;
+}
+
+QTabBar::close-button {
+    image: none;
+    padding: 2px;
+    border-radius: 3px;
+}
+
+QTabBar::close-button:hover {
+    background-color: #ef4444;
+    color: white;
+}
 """
 
 LIGHT_THEME = """

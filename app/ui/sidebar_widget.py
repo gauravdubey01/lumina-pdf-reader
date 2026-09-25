@@ -1,20 +1,24 @@
 """
-Sidebar Widget containing Page Thumbnails, Bookmarks (TOC), and Full-Text Search.
+Sidebar Widget containing Page Thumbnails with context menu page organizer,
+Bookmarks (TOC), and Full-Text Search.
 """
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTabWidget,
     QListWidget, QListWidgetItem, QTreeWidget, QTreeWidgetItem,
-    QLineEdit, QPushButton, QLabel, QProgressBar, QAbstractItemView,
-    QHeaderView
+    QLineEdit, QPushButton, QLabel, QAbstractItemView,
+    QMenu, QFileDialog, QMessageBox, QInputDialog
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtGui import QPixmap, QIcon, QAction
 from app.core.pdf_document import PDFDocument
+from app.core.pdf_tools import PDFTools
 from typing import Optional, List, Dict, Any
+import os
 
 class SidebarWidget(QWidget):
     page_selected = pyqtSignal(int)  # 0-indexed page
     search_result_selected = pyqtSignal(int, list)  # page_num, rects
+    document_structure_changed = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -30,16 +34,19 @@ class SidebarWidget(QWidget):
         self.tabs = QTabWidget()
         self.tabs.setTabPosition(QTabWidget.TabPosition.North)
 
-        # Tab 1: Thumbnails
+        # Tab 1: Thumbnails with Context Menu
         self.thumb_tab = QWidget()
         thumb_layout = QVBoxLayout(self.thumb_tab)
         thumb_layout.setContentsMargins(2, 4, 2, 4)
+
         self.thumb_list = QListWidget()
         self.thumb_list.setIconSize(QSize(130, 170))
         self.thumb_list.setViewMode(QListWidget.ViewMode.IconMode)
         self.thumb_list.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.thumb_list.setMovement(QListWidget.Movement.Static)
         self.thumb_list.setSpacing(10)
+        self.thumb_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.thumb_list.customContextMenuRequested.connect(self._show_thumbnail_context_menu)
         self.thumb_list.itemClicked.connect(self._on_thumbnail_clicked)
         thumb_layout.addWidget(self.thumb_list)
 
@@ -82,7 +89,6 @@ class SidebarWidget(QWidget):
         self.search_results_list.itemClicked.connect(self._on_search_item_clicked)
         search_layout.addWidget(self.search_results_list)
 
-        # Add tabs
         self.tabs.addTab(self.thumb_tab, "Pages")
         self.tabs.addTab(self.outline_tab, "Outline")
         self.tabs.addTab(self.search_tab, "Search")
@@ -109,11 +115,11 @@ class SidebarWidget(QWidget):
         if not self.doc:
             return
         total = self.doc.page_count
+        self.thumb_list.clear()
         for i in range(total):
             item = QListWidgetItem(f"Page {i + 1}")
             item.setData(Qt.ItemDataRole.UserRole, i)
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            # Render low-res thumbnail
             pix = self.doc.render_thumbnail(i, width=120)
             if not pix.isNull():
                 item.setIcon(QIcon(pix))
@@ -141,7 +147,6 @@ class SidebarWidget(QWidget):
             tree_item = QTreeWidgetItem([title])
             tree_item.setData(0, Qt.ItemDataRole.UserRole, page)
 
-            # Adjust stack for nesting
             while len(level_stack) > level:
                 level_stack.pop()
 
@@ -154,6 +159,80 @@ class SidebarWidget(QWidget):
             level_stack.append(tree_item)
 
         self.outline_tree.expandToDepth(1)
+
+    def _show_thumbnail_context_menu(self, pos):
+        item = self.thumb_list.itemAt(pos)
+        if not item or not self.doc or not self.doc.is_valid():
+            return
+
+        page_num = item.data(Qt.ItemDataRole.UserRole)
+        menu = QMenu(self)
+
+        title_act = menu.addAction(f"📄 Page {page_num + 1} Actions")
+        title_act.setEnabled(False)
+        menu.addSeparator()
+
+        rot_cw = menu.addAction("🔄 Rotate Right (90°)")
+        rot_cw.triggered.connect(lambda: self._rotate_page(page_num, 90))
+
+        rot_ccw = menu.addAction("🔄 Rotate Left (90°)")
+        rot_ccw.triggered.connect(lambda: self._rotate_page(page_num, -90))
+
+        menu.addSeparator()
+        dup_act = menu.addAction("📋 Duplicate Page")
+        dup_act.triggered.connect(lambda: self._duplicate_page(page_num))
+
+        insert_blank = menu.addAction("➕ Insert Blank Page After")
+        insert_blank.triggered.connect(lambda: self._insert_blank_page(page_num))
+
+        extract_act = menu.addAction("✂️ Extract Page to New PDF...")
+        extract_act.triggered.connect(lambda: self._extract_page(page_num))
+
+        menu.addSeparator()
+        del_act = menu.addAction("🗑 Delete Page")
+        del_act.setEnabled(self.doc.page_count > 1)
+        del_act.triggered.connect(lambda: self._delete_page(page_num))
+
+        menu.exec(self.thumb_list.mapToGlobal(pos))
+
+    def _rotate_page(self, page_num: int, angle: int):
+        if self.doc and self.doc.rotate_page(page_num, angle):
+            self._populate_thumbnails()
+            self.document_structure_changed.emit()
+
+    def _duplicate_page(self, page_num: int):
+        if self.doc and self.doc.duplicate_page(page_num):
+            self._populate_thumbnails()
+            self.document_structure_changed.emit()
+
+    def _insert_blank_page(self, page_num: int):
+        if self.doc and self.doc.insert_blank_page(page_num):
+            self._populate_thumbnails()
+            self.document_structure_changed.emit()
+
+    def _delete_page(self, page_num: int):
+        ret = QMessageBox.question(
+            self, "Delete Page",
+            f"Are you sure you want to delete Page {page_num + 1}?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if ret == QMessageBox.StandardButton.Yes and self.doc:
+            if self.doc.delete_page(page_num):
+                self._populate_thumbnails()
+                self.document_structure_changed.emit()
+
+    def _extract_page(self, page_num: int):
+        if not self.doc or not self.doc.file_path:
+            return
+        out_file, _ = QFileDialog.getSaveFileName(
+            self, "Extract Page As", f"Extracted_Page_{page_num + 1}.pdf", "PDF Files (*.pdf)"
+        )
+        if out_file:
+            success, msg = PDFTools.split_pdf_by_range(self.doc.file_path, str(page_num + 1), out_file)
+            if success:
+                QMessageBox.information(self, "Success", msg)
+            else:
+                QMessageBox.critical(self, "Error", msg)
 
     def perform_search(self):
         query = self.search_input.text().strip()
@@ -180,7 +259,6 @@ class SidebarWidget(QWidget):
             self.search_results_list.addItem(item)
 
     def set_current_page(self, page_num: int):
-        # Highlight corresponding thumbnail
         if page_num < self.thumb_list.count():
             self.thumb_list.blockSignals(True)
             self.thumb_list.setCurrentRow(page_num)
