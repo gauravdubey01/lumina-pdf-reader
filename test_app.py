@@ -220,6 +220,21 @@ def test_main_window_full_ui():
     win.close()
     print("   [PASS] MainWindow full UI integration tests passed.")
 
+def test_web_and_image_converter():
+    print("\n7. Testing Web & Image to PDF Converter...")
+    from app.core.web_converter import WebConverter
+    
+    # 1. Test Image to PDF
+    test_pdf = "Test_Img_Output.pdf"
+    success, msg = WebConverter.convert_images_to_pdf(["assets/icon.png"], test_pdf)
+    assert success, f"Image conversion failed: {msg}"
+    doc = PDFDocument(test_pdf)
+    assert doc.page_count == 1, "Expected 1 page from 1 image"
+    doc.close()
+    if os.path.exists(test_pdf):
+        os.remove(test_pdf)
+    print("   [PASS] Image to PDF converter passed.")
+
 if __name__ == "__main__":
     test_pdf_document_core()
     test_pdf_annotations_and_save()
@@ -227,6 +242,7 @@ if __name__ == "__main__":
     test_password_encryption()
     test_multi_tab_manager()
     test_main_window_full_ui()
+    test_web_and_image_converter()
     print("\n========================================================")
-    print("ALL 6 PROFESSIONAL TEST SUITES PASSED! (100% OK)")
+    print("ALL 7 PROFESSIONAL TEST SUITES PASSED! (100% OK)")
     print("========================================================")

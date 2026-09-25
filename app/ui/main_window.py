@@ -26,6 +26,8 @@ from app.ui.split_dialog import SplitPDFDialog
 from app.ui.password_dialog import PasswordDialog
 from app.ui.security_dialog import SecurityDialog
 from app.ui.export_dialog import ExportDialog
+from app.ui.web_to_pdf_dialog import WebToPDFDialog
+from app.ui.image_to_pdf_dialog import ImageToPDFDialog
 from app.ui.shortcuts_dialog import ShortcutsDialog
 from app.ui.styles import get_theme_stylesheet
 
@@ -113,6 +115,11 @@ class MainWindow(QMainWindow):
         export_action.triggered.connect(self._open_export_dialog)
         file_menu.addAction(export_action)
 
+        web_to_pdf_act = QAction("🌐 &Convert Webpage to PDF...", self)
+        web_to_pdf_act.setShortcut(QKeySequence("Ctrl+Shift+W"))
+        web_to_pdf_act.triggered.connect(self._open_web_to_pdf_dialog)
+        file_menu.addAction(web_to_pdf_act)
+
         print_action = QAction("&Print...", self)
         print_action.setShortcut(QKeySequence.StandardKey.Print)
         print_action.triggered.connect(self._on_print)
@@ -185,6 +192,16 @@ class MainWindow(QMainWindow):
         # ----------------- Tools Menu -----------------
         tools_menu = menubar.addMenu("&Tools")
 
+        web_tool_act = QAction("🌐 &Convert Webpage to PDF...", self)
+        web_tool_act.triggered.connect(self._open_web_to_pdf_dialog)
+        tools_menu.addAction(web_tool_act)
+
+        img_tool_act = QAction("🖼 &Convert Images to PDF...", self)
+        img_tool_act.triggered.connect(self._open_image_to_pdf_dialog)
+        tools_menu.addAction(img_tool_act)
+
+        tools_menu.addSeparator()
+
         merge_action = QAction("🔀 &Merge Multiple PDFs...", self)
         merge_action.triggered.connect(self._open_merge_dialog)
         tools_menu.addAction(merge_action)
@@ -256,6 +273,13 @@ class MainWindow(QMainWindow):
         self.btn_open.setToolTip("Open PDF Document (Ctrl+O)")
         self.btn_open.clicked.connect(self._on_open_file_dialog)
         self.toolbar.addWidget(self.btn_open)
+
+        # Web to PDF Button
+        self.btn_web = QToolButton()
+        self.btn_web.setText("🌐 Web PDF")
+        self.btn_web.setToolTip("Convert Webpage or Article to PDF (Ctrl+Shift+W)")
+        self.btn_web.clicked.connect(self._open_web_to_pdf_dialog)
+        self.toolbar.addWidget(self.btn_web)
 
         # Toggle Sidebar
         self.btn_sidebar = QToolButton()
@@ -540,6 +564,16 @@ class MainWindow(QMainWindow):
         if self.current_doc:
             dlg = ExportDialog(self.current_doc, self)
             dlg.exec()
+
+    def _open_web_to_pdf_dialog(self):
+        dlg = WebToPDFDialog(self)
+        dlg.converted_pdf_ready.connect(self.open_pdf)
+        dlg.exec()
+
+    def _open_image_to_pdf_dialog(self):
+        dlg = ImageToPDFDialog(self)
+        dlg.converted_pdf_ready.connect(self.open_pdf)
+        dlg.exec()
 
     def _open_security_dialog(self):
         curr_file = self.current_doc.file_path if self.current_doc else ""
