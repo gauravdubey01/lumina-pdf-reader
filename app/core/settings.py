@@ -7,8 +7,8 @@ import os
 import json
 
 class AppSettings:
-    ORGANIZATION = "LuminaApps"
-    APPLICATION = "LuminaPDF"
+    ORGANIZATION = "Gaurav_dubey"
+    APPLICATION = "OmniPDF"
 
     def __init__(self):
         self.settings = QSettings(self.ORGANIZATION, self.APPLICATION)

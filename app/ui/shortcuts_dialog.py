@@ -16,7 +16,7 @@ class ShortcutsDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setSpacing(12)
 
-        title = QLabel("Lumina PDF Reader - Keyboard Shortcuts")
+        title = QLabel("OmniPDF - Keyboard Shortcuts")
         title.setStyleSheet("font-size: 15px; font-weight: bold; color: #38bdf8;")
         layout.addWidget(title)
 

@@ -9,7 +9,7 @@ def setup_windows_app_id():
     """Ensure proper taskbar icon behavior on Windows."""
     if sys.platform == "win32":
         try:
-            myappid = "lumina.pdfreader.desktop.v1"
+            myappid = "Gauravdubey.Omnipdf"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception:
             pass
@@ -30,8 +30,8 @@ def main():
     from PyQt6.QtCore import Qt
 
     app = QApplication(sys.argv)
-    app.setApplicationName("Lumina PDF Reader")
-    app.setOrganizationName("LuminaApps")
+    app.setApplicationName("OmniPDF")
+    app.setOrganizationName("Gaurav_dubey")
     app.setApplicationVersion("1.0.0")
 
     from PyQt6.QtGui import QIcon

@@ -34,7 +34,7 @@ from app.ui.styles import get_theme_stylesheet
 class MainWindow(QMainWindow):
     def __init__(self, initial_file: str = None):
         super().__init__()
-        self.setWindowTitle("Lumina PDF Reader")
+        self.setWindowTitle("OmniPDF")
         self.resize(1260, 880)
         self.setMinimumSize(850, 600)
         self.setAcceptDrops(True)
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         shortcuts_act.triggered.connect(self._show_shortcuts_dialog)
         help_menu.addAction(shortcuts_act)
 
-        about_action = QAction("&About Lumina PDF", self)
+        about_action = QAction("&About OmniPDF", self)
         about_action.triggered.connect(self._show_about_dialog)
         help_menu.addAction(about_action)
 
@@ -507,7 +507,7 @@ class MainWindow(QMainWindow):
             self.page_spin.setRange(1, 1)
             self.lbl_total_pages.setText(" / 0 ")
             self.lbl_status_file.setText("")
-            self.setWindowTitle("Lumina PDF Reader")
+            self.setWindowTitle("OmniPDF")
             return
 
         total_pages = doc.page_count
@@ -519,7 +519,7 @@ class MainWindow(QMainWindow):
         self.lbl_total_pages.setText(f" / {total_pages} ")
         self.lbl_status_file.setText(f"📄 {os.path.basename(doc.file_path or 'Untitled')} ({total_pages} pages)")
         self.lbl_status_msg.setText(f"Opened: {os.path.basename(doc.file_path or 'Document')}")
-        self.setWindowTitle(f"{os.path.basename(doc.file_path or 'Document')} - Lumina PDF Reader")
+        self.setWindowTitle(f"{os.path.basename(doc.file_path or 'Document')} - OmniPDF")
 
     def _on_active_doc_changed(self, doc: Optional[PDFDocument], viewer: Optional[PDFViewerWidget]):
         self.sidebar.set_document(doc)
@@ -597,9 +597,9 @@ class MainWindow(QMainWindow):
     def _show_about_dialog(self):
         QMessageBox.about(
             self,
-            "About Lumina PDF Reader",
-            "<h2>Lumina PDF Reader & Tools</h2>"
-            "<p><b>Version 1.1.0 (Professional Edition)</b></p>"
+            "About OmniPDF",
+            "<h2>OmniPDF Reader & Tools</h2>"
+            "<p><b>Version 1.0.0</b></p>"
             "<p>A modern, high-performance Windows PDF suite featuring Book Reading Mode, "
             "Dark & Light Themes, Multi-Document Tabs, Text Selection, Markup & Annotations, "
             "Native Printing, Password Encryption, and Page Organization.</p>"

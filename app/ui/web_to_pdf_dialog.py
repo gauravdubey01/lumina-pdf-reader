@@ -58,8 +58,8 @@ class WebToPDFDialog(QDialog):
         self.url_input.returnPressed.connect(self._on_convert)
         layout.addWidget(self.url_input)
 
-        # Open in Lumina Checkbox
-        self.chk_auto_open = QCheckBox("Open automatically in Lumina PDF after conversion")
+        # Open in OmniPDF Checkbox
+        self.chk_auto_open = QCheckBox("Open automatically in OmniPDF after conversion")
         self.chk_auto_open.setChecked(True)
         layout.addWidget(self.chk_auto_open)
 
@@ -98,7 +98,7 @@ class WebToPDFDialog(QDialog):
 
         if self.chk_auto_open.isChecked():
             # Save to temporary or downloads folder
-            tmp_dir = os.path.join(tempfile.gettempdir(), "LuminaWebPDFs")
+            tmp_dir = os.path.join(tempfile.gettempdir(), "OmniPDFWeb")
             os.makedirs(tmp_dir, exist_ok=True)
             domain = url.replace("https://", "").replace("http://", "").split("/")[0].replace(".", "_")
             out_file = os.path.join(tmp_dir, f"Webpage_{domain}.pdf")

@@ -7,6 +7,8 @@ __pycache__/
 build/
 dist/
 *.spec
+*.pfx
+*.msix
 
 # Test output artifacts
 test_chunks/

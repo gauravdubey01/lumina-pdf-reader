@@ -612,7 +612,7 @@ class ViewerCanvas(QWidget):
         font.setPointSize(24)
         font.setBold(True)
         painter.setFont(font)
-        painter.drawText(QRectF(cx - 250, cy - 80, 500, 40), Qt.AlignmentFlag.AlignCenter, "Lumina PDF Reader")
+        painter.drawText(QRectF(cx - 250, cy - 80, 500, 40), Qt.AlignmentFlag.AlignCenter, "OmniPDF")
 
         font.setPointSize(13)
         font.setBold(False)
