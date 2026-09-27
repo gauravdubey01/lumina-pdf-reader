@@ -879,15 +879,9 @@ class MainWindow(QMainWindow):
                 break
 
     def closeEvent(self, event: QCloseEvent):
-        if self.settings.confirm_exit:
-            dlg = ExitConfirmDialog(self)
-            if dlg.exec() == QDialog.DialogCode.Accepted:
-                if dlg.dont_ask_again:
-                    self.settings.confirm_exit = False
-                self.settings.save_window_state(self.saveGeometry(), self.saveState())
-                event.accept()
-            else:
-                event.ignore()
-        else:
+        dlg = ExitConfirmDialog(self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
             self.settings.save_window_state(self.saveGeometry(), self.saveState())
             event.accept()
+        else:
+            event.ignore()

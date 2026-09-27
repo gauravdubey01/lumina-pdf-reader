@@ -4,7 +4,7 @@ Prompts the user before closing and provides a friendly note to support the crea
 """
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QCheckBox, QFrame
+    QPushButton, QFrame
 )
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QIcon
@@ -18,7 +18,6 @@ class ExitConfirmDialog(QDialog):
         self.setWindowTitle("Exit OmniPDF")
         self.setFixedWidth(480)
         self.setModal(True)
-        self.dont_ask_again = False
 
         self.setStyleSheet("""
             QDialog {
@@ -27,9 +26,6 @@ class ExitConfirmDialog(QDialog):
             }
             QLabel {
                 color: #f8fafc;
-            }
-            QCheckBox {
-                color: #94a3b8;
             }
             QPushButton#secondaryBtn {
                 background-color: #1e293b;
@@ -113,11 +109,6 @@ class ExitConfirmDialog(QDialog):
 
         layout.addWidget(card)
 
-        # Don't ask again checkbox
-        self.chk_dont_ask = QCheckBox("Don't ask again when exiting")
-        self.chk_dont_ask.setStyleSheet("font-size: 12px; color: #94a3b8;")
-        layout.addWidget(self.chk_dont_ask)
-
         # Dialog buttons (Cancel, Exit)
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
@@ -147,14 +138,10 @@ class ExitConfirmDialog(QDialog):
                 background-color: #b91c1c;
             }
         """)
-        self.btn_exit.clicked.connect(self._on_confirm_exit)
+        self.btn_exit.clicked.connect(self.accept)
         btn_layout.addWidget(self.btn_exit)
 
         layout.addLayout(btn_layout)
 
     def _open_kofi(self):
         QDesktopServices.openUrl(QUrl(self.KO_FI_URL))
-
-    def _on_confirm_exit(self):
-        self.dont_ask_again = self.chk_dont_ask.isChecked()
-        self.accept()

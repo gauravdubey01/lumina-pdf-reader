@@ -93,15 +93,6 @@ class AppSettings:
     def sidebar_visible(self, value: bool):
         self.settings.setValue("sidebar_visible", value)
 
-    # Confirm exit: bool
-    @property
-    def confirm_exit(self) -> bool:
-        return self.settings.value("confirm_exit", True, type=bool)
-
-    @confirm_exit.setter
-    def confirm_exit(self, value: bool):
-        self.settings.setValue("confirm_exit", value)
-
     # Window geometry & state
     def save_window_state(self, geometry, window_state):
         self.settings.setValue("geometry", geometry)
