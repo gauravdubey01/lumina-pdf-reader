@@ -13,8 +13,9 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QSize, QUrl
 from typing import Optional, List, Dict, Any
-from PyQt6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QDragEnterEvent, QDropEvent
+from PyQt6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QDragEnterEvent, QDropEvent, QCloseEvent, QDesktopServices
 
+from app import __version__
 from app.core.pdf_document import PDFDocument
 from app.core.settings import AppSettings
 from app.core.print_manager import PrintManager
@@ -29,6 +30,8 @@ from app.ui.export_dialog import ExportDialog
 from app.ui.web_to_pdf_dialog import WebToPDFDialog
 from app.ui.image_to_pdf_dialog import ImageToPDFDialog
 from app.ui.shortcuts_dialog import ShortcutsDialog
+from app.ui.tutorial_dialog import TutorialDialog
+from app.ui.exit_dialog import ExitConfirmDialog
 from app.ui.styles import get_theme_stylesheet
 
 class MainWindow(QMainWindow):
@@ -252,10 +255,23 @@ class MainWindow(QMainWindow):
         # ----------------- Help Menu -----------------
         help_menu = menubar.addMenu("&Help")
 
-        shortcuts_act = QAction("⌨ &Keyboard Shortcuts", self)
-        shortcuts_act.setShortcut(QKeySequence("F1"))
+        tutorial_act = QAction("🎓 &How to Use OmniPDF (Tutorial)...", self)
+        tutorial_act.setShortcut(QKeySequence("F1"))
+        tutorial_act.triggered.connect(self._show_tutorial_dialog)
+        help_menu.addAction(tutorial_act)
+
+        shortcuts_act = QAction("⌨ &Keyboard Shortcuts...", self)
+        shortcuts_act.setShortcut(QKeySequence("F2"))
         shortcuts_act.triggered.connect(self._show_shortcuts_dialog)
         help_menu.addAction(shortcuts_act)
+
+        help_menu.addSeparator()
+
+        kofi_act = QAction("☕ &Support Creator on Ko-fi...", self)
+        kofi_act.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://ko-fi.com/gauravdubeypro")))
+        help_menu.addAction(kofi_act)
+
+        help_menu.addSeparator()
 
         about_action = QAction("&About OmniPDF", self)
         about_action.triggered.connect(self._show_about_dialog)
@@ -431,6 +447,20 @@ class MainWindow(QMainWindow):
         self.theme_combo.currentIndexChanged.connect(self._on_theme_combo_changed)
         self.toolbar.addWidget(self.theme_combo)
 
+        self.toolbar.addSeparator()
+
+        # Tutorial Button
+        self.btn_tutorial = QToolButton()
+        self.btn_tutorial.setText("🎓 Tutorial")
+        self.btn_tutorial.setToolTip("How to Use OmniPDF - Interactive Guide (F1)")
+        self.btn_tutorial.clicked.connect(self._show_tutorial_dialog)
+        self.toolbar.addWidget(self.btn_tutorial)
+
+    def _create_status_sep(self) -> QLabel:
+        sep = QLabel("│")
+        sep.setStyleSheet("color: #4b5563; padding: 0 4px;")
+        return sep
+
     def _create_status_bar(self):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
@@ -447,10 +477,40 @@ class MainWindow(QMainWindow):
         self.zoom_slider.setToolTip("Adjust Zoom Level")
         self.zoom_slider.valueChanged.connect(self._on_zoom_slider_changed)
 
+        # Left status message
         self.status_bar.addWidget(self.lbl_status_msg, 1)
+
+        # Right permanent footer widgets
+        self.status_bar.addPermanentWidget(self.lbl_status_file)
+        self.status_bar.addPermanentWidget(self._create_status_sep())
         self.status_bar.addPermanentWidget(self.zoom_slider)
         self.status_bar.addPermanentWidget(self.lbl_status_zoom)
-        self.status_bar.addPermanentWidget(self.lbl_status_file)
+        self.status_bar.addPermanentWidget(self._create_status_sep())
+
+        # Version of the app
+        self.lbl_version = QLabel(f"v{__version__}")
+        self.lbl_version.setToolTip(f"OmniPDF Version {__version__}")
+        self.lbl_version.setStyleSheet("font-weight: 500;")
+        self.status_bar.addPermanentWidget(self.lbl_version)
+
+        self.status_bar.addPermanentWidget(self._create_status_sep())
+
+        # Made by Gaurav Dubey
+        self.lbl_creator = QLabel("made by Gaurav Dubey")
+        self.lbl_creator.setStyleSheet("color: #94a3b8; font-style: italic;")
+        self.status_bar.addPermanentWidget(self.lbl_creator)
+
+        self.status_bar.addPermanentWidget(self._create_status_sep())
+
+        # Clickable Ko-fi support link on the right side of the footer
+        self.lbl_kofi = QLabel(
+            '<a href="https://ko-fi.com/gauravdubeypro" style="color: #ff5e5b; text-decoration: none; font-weight: bold;">☕ Support on Ko-fi</a>'
+        )
+        self.lbl_kofi.setOpenExternalLinks(True)
+        self.lbl_kofi.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.lbl_kofi.setToolTip("Support Gaurav Dubey on Ko-fi: https://ko-fi.com/gauravdubeypro")
+        self.lbl_kofi.setStyleSheet("padding-right: 6px;")
+        self.status_bar.addPermanentWidget(self.lbl_kofi)
 
     def _load_saved_settings(self):
         theme = self.settings.theme
@@ -590,6 +650,10 @@ class MainWindow(QMainWindow):
         dlg = SplitPDFDialog(self, pdf_path=curr_path)
         dlg.exec()
 
+    def _show_tutorial_dialog(self):
+        dlg = TutorialDialog(self)
+        dlg.exec()
+
     def _show_shortcuts_dialog(self):
         dlg = ShortcutsDialog(self)
         dlg.exec()
@@ -598,12 +662,14 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About OmniPDF",
-            "<h2>OmniPDF Reader & Tools</h2>"
-            "<p><b>Version 1.0.0</b></p>"
-            "<p>A modern, high-performance Windows PDF suite featuring Book Reading Mode, "
-            "Dark & Light Themes, Multi-Document Tabs, Text Selection, Markup & Annotations, "
-            "Native Printing, Password Encryption, and Page Organization.</p>"
-            "<p>Powered by PyQt6 and PyMuPDF.</p>"
+            f"<h2>OmniPDF Reader & Tools</h2>"
+            f"<p><b>Version {__version__}</b></p>"
+            f"<p>Made with ❤️ by <b>Gaurav Dubey</b></p>"
+            f"<p>A modern, high-performance Windows PDF suite featuring Book Reading Mode, "
+            f"Dark & Light Themes, Multi-Document Tabs, Text Selection, Markup & Annotations, "
+            f"Native Printing, Password Encryption, and Page Organization.</p>"
+            f"<p><a href='https://ko-fi.com/gauravdubeypro' style='color:#ff5e5b; font-weight:bold;'>☕ Support Gaurav Dubey on Ko-fi</a></p>"
+            f"<p>Powered by PyQt6 and PyMuPDF.</p>"
         )
 
     def _set_tool_mode(self, mode: str):
@@ -811,3 +877,17 @@ class MainWindow(QMainWindow):
                 self.open_pdf(fpath)
                 event.acceptProposedAction()
                 break
+
+    def closeEvent(self, event: QCloseEvent):
+        if self.settings.confirm_exit:
+            dlg = ExitConfirmDialog(self)
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                if dlg.dont_ask_again:
+                    self.settings.confirm_exit = False
+                self.settings.save_window_state(self.saveGeometry(), self.saveState())
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            self.settings.save_window_state(self.saveGeometry(), self.saveState())
+            event.accept()
