@@ -49,7 +49,7 @@ APPX_MANIFEST_CONTENT = f"""<?xml version="1.0" encoding="utf-8"?>
   </Dependencies>
 
   <Resources>
-    <Resource Language="x-generate" />
+    <Resource Language="en-us" />
   </Resources>
 
   <Applications>
