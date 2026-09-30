@@ -22,13 +22,14 @@ def create_sample_book(output_path="Sample_Book.pdf"):
     page1.draw_rect(fitz.Rect(50, 50, 545, 250), color=None, fill=(0.95, 0.96, 0.98))
     page1.insert_text(fitz.Point(80, 130), "THE ART OF READING", fontsize=28, color=primary_color)
     page1.insert_text(fitz.Point(80, 170), "A Journey Through Books & Digital Pages", fontsize=16, color=(0.3, 0.3, 0.3))
-    page1.insert_text(fitz.Point(80, 210), "By Lumina Publishing", fontsize=12, color=(0.4, 0.4, 0.4))
+    page1.insert_text(fitz.Point(80, 210), "By OmniPDF Publishing • Gaurav Dubey", fontsize=12, color=(0.4, 0.4, 0.4))
     
-    page1.insert_text(fitz.Point(80, 400), "Welcome to Lumina PDF Reader!", fontsize=18, color=primary_color)
+    page1.insert_text(fitz.Point(80, 400), "Welcome to OmniPDF!", fontsize=20, color=primary_color)
     page1.insert_text(
         fitz.Point(80, 440),
-        "This sample book demonstrates the two-page Book Reading Mode,\n"
-        "smart Dark & Light themes, full-text search, and sidebar navigation.\n"
+        "OmniPDF is a modern, high-performance Windows PDF suite featuring\n"
+        "immersive Two-Page Book Reading Mode, smart Dark & Sepia themes,\n"
+        "live markup annotations, and native document productivity tools.\n\n"
         "Notice how the cover page is displayed gracefully, followed by\n"
         "two-page spreads in book mode!",
         fontsize=13,
@@ -62,7 +63,7 @@ def create_sample_book(output_path="Sample_Book.pdf"):
     page3.draw_line(fitz.Point(60, 95), fitz.Point(535, 95), color=(0.7, 0.7, 0.7), width=1)
     page3.insert_text(
         fitz.Point(60, 140),
-        "Dark Mode in Lumina PDF is engineered specifically for eye comfort.\n"
+        "Dark Mode in OmniPDF is engineered specifically for eye comfort.\n"
         "Rather than harsh pure black and piercing white, our dark filter softens\n"
         "backgrounds into deep slate while keeping text legible and diagrams clear.\n\n"
         "Sepia Mode applies an organic warm filter inspired by aged parchment,\n"
@@ -122,7 +123,7 @@ def create_sample_book(output_path="Sample_Book.pdf"):
     page6.draw_line(fitz.Point(60, 95), fitz.Point(535, 95), color=primary_color, width=1.5)
     page6.insert_text(
         fitz.Point(60, 140),
-        "Thank you for exploring Lumina PDF Reader.\n\n"
+        "Thank you for exploring OmniPDF.\n\n"
         "Everything in this application has been crafted to deliver speed,\n"
         "clarity, and ease of use on Windows.\n\n"
         "Enjoy your reading journey!",
@@ -165,7 +166,49 @@ def create_sample_parts():
     doc_b.save("Document_B.pdf")
     doc_b.close()
 
+def create_annotated_sample(src_path="Sample_Book.pdf", output_path="Sample_Annotated.pdf"):
+    doc = fitz.open(src_path)
+    
+    # Page 2: Add highlighter and ink drawing
+    p2 = doc[1]
+    # Highlight "Reading on a digital screen should feel as natural, comfortable, and"
+    rect1 = fitz.Rect(60, 138, 480, 156)
+    annot_hl1 = p2.add_highlight_annot(rect1)
+    annot_hl1.set_colors(stroke=(1.0, 0.85, 0.0)) # Bright Yellow
+    annot_hl1.update()
+
+    # Highlight "Key Advantages of Modern Reading:"
+    rect2 = fitz.Rect(60, 230, 310, 248)
+    annot_hl2 = p2.add_highlight_annot(rect2)
+    annot_hl2.set_colors(stroke=(0.2, 0.8, 0.4)) # Soft Green
+    annot_hl2.update()
+
+    # Add a freehand circle / underline around "Instant high-resolution rendering"
+    points = [
+        [(75.0, 275.0), (150.0, 276.0), (220.0, 275.0), (320.0, 274.0), (340.0, 275.0)]
+    ]
+    annot_ink = p2.add_ink_annot(points)
+    annot_ink.set_colors(stroke=(0.9, 0.2, 0.2)) # Red pen underline
+    annot_ink.set_border(width=2)
+    annot_ink.update()
+
+    # Add a Sticky Note
+    note_annot = p2.add_text_annot(fitz.Point(490, 140), "Important note: Book mode two-page spread looks amazing here!")
+    note_annot.update()
+
+    # Page 3: Add Sepia/Dark mode highlights
+    p3 = doc[2]
+    rect3 = fitz.Rect(60, 138, 490, 156)
+    annot_hl3 = p3.add_highlight_annot(rect3)
+    annot_hl3.set_colors(stroke=(0.3, 0.7, 1.0)) # Cyan
+    annot_hl3.update()
+
+    doc.save(output_path)
+    doc.close()
+    print(f"Created {output_path}")
+
 if __name__ == "__main__":
     create_sample_book("Sample_Book.pdf")
     create_sample_parts()
+    create_annotated_sample("Sample_Book.pdf", "Sample_Annotated.pdf")
     print("All sample PDF files generated successfully!")
